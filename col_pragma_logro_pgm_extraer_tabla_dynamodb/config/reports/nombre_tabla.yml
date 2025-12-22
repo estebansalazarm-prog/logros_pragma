@@ -1,0 +1,103 @@
+# Archivo: nombre_tabla.yml
+# (Este nombre de archivo correspondería al table_name o a un identificador del proceso)
+
+# -- SECCIÓN 1: METADATOS DEL PROCESO --
+process_metadata:
+  # Identificador único del proceso, podría ser el mismo nombre del archivo
+  process_id: 'extract_dynamodb_table'
+  # Descripción del proceso ETL
+  description: 'Extrae datos de nombre_tabla, aplana los datos y los cataloga en athena.'
+  # Propietario o equipo responsable
+  owner: 'pragma'
+  # Versión de esta configuración
+  version: '1.0.0'
+
+# -- SECCIÓN 2: CONFIGURACIÓN DE LA FUENTE DE DATOS --
+source_config:
+  # Nombre descriptivo de la fuente, útil para logs y documentación
+  source_name: 'S3 DynamoDB Export - Pragma'
+
+  # Tipo de conexión para la fuente.
+  # Opciones podrían ser: "catalog", "s3_path", "jdbc", etc.
+  connection_type: 's3_path'
+
+  # Opciones específicas para connection_type: "s3_path" (ACTIVO)
+  s3_details:
+    path_template_inc: "s3://{raw_bucket}/pgm/col_json_dynamodb_nombre_tabla/incremental/year={process_year}/month={process_month}/day={process_day}/hour=*/AWSDynamoDB/data"
+    path_template_full: "s3://{raw_bucket}/pgm/col_json_dynamodb_nombre_tabla/full/year={process_year}/month={process_month}/day={process_day}/AWSDynamoDB/*/data"
+    data_format: "json" # "json", "parquet", "csv", etc.
+    # Opciones específicas del formato, ej: para CSV
+    format_options: {}
+      # header: "true"
+      # delimiter: ","
+      # inferSchema: "true"
+
+  # Opciones específicas para connection_type: "catalog" (COMENTADO - no se usa para DynamoDB)
+  # catalog_details:
+  #   # Plantilla para el nombre de la base de datos en el catálogo de Glue.
+  #   # {current_env} se reemplazará en tiempo de ejecución.
+  #   database_template: {catalogo_base_datos}
+  #   # Nombre de la tabla en el catálogo de Glue.
+  #   table_name: 'nombre_tabla'
+  #
+  #   # Plantillas para opciones adicionales al leer del catálogo.
+  #   # {process_year}, {process_month}, {process_day} se reemplazarán en tiempo de ejecución.
+  #   additional_options_templates:
+  #     catalogPartitionPredicate: "year = '{process_year}' and month='{process_month}' and day='{process_day}'"
+  #
+  #   # Plantilla para el predicado de empuje (push-down predicate).
+  #   # {push_down_predicate} es un placeholder para un filtro más dinámico
+  #   # que se puede pasar en tiempo de ejecución si es necesario, o puede ser más específico aquí.
+  #   # push_down_predicate_template: "{push_down_predicate}"
+  #   # Ejemplo alternativo de push_down_predicate_template más específico:
+  #   # push_down_predicate_template: "columna_estado = 'ACTIVO' AND tipo_registro = '{tipo_reg_param}'"
+
+# -- SECCIÓN 3: CONFIGURACIÓN DEL PROCESAMIENTO/TRANSFORMACIÓN --
+processing_config:
+  # Esquema de la tabla de DynamoBD que se va a exportar (sin .schema.yml)
+  schema_name: "col_pragma_tabla_final"
+  
+  # Configuración específica para DynamoDB
+  # Columnas clave para filtros NOT NULL (se aplica isNotNull)
+  key_columns:
+    - "key"
+    - "sortkey"
+  
+  # Columna para ordenar en la ventana (último estado)
+  order_by_column: "tstamp"
+  
+  # Columna para particionar (year, month, day) - si está vacío, usa created_at por defecto
+  partition_date: "created_at"
+
+  # Columna para configurar el PRECOMBINE_KEY de Hudi
+  precombine_key: "tstamp"
+
+  # Columnas a seleccionar de la tabla fuente para el resultado final (COMENTADO - no se usa para DynamoDB)
+  # El orden aquí podría definir el orden en el CSV de salida si no se especifica de otra manera.
+  # select_columns:
+  #   - tstamp
+
+  # Opcional: Renombrar columnas después de seleccionarlas.
+  # rename_columns:
+  #   - old_name: campo_123
+  #     new_name: nuevo_nombre_campo
+
+
+  sql_transformations:
+    - name: tstamp
+      sql: COALESCE(FROM_UNIXTIME(tstamp / 1000), TIMESTAMP '2000-01-01 00:00:00')
+
+  # Opcional: Filtros a aplicar después de la lectura (si el push-down no es suficiente o es más complejo)
+  # post_read_filters:
+  #  - "year = '{process_year}' and month='{process_month}' and day='{process_day}'"
+
+# -- SECCIÓN 4: CONFIGURACIÓN DE LA SALIDA (ESCRITURA DEL CSV) --
+output_config:
+  # Formato del archivo de salida.
+
+  # Plantilla para la ruta de destino del archivo/directorio CSV en S3.
+  # {table_name} o {process_id} pueden usarse para organizar la salida.
+  # {current_env}, {process_year}, etc., también se reemplazarán.
+  data_product: "tabla_final"
+  # Cuenta en la cual el proceso fuente se encuentra. Con este campo se construye el nombre de la tabla final
+  product_type: "pragma"

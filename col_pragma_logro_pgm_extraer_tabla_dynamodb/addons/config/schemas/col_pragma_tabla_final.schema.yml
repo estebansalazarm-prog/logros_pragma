@@ -1,0 +1,76 @@
+- CaseSensitive: true
+  CatalogName: hive
+  Label: nombre_campo_1
+  Name: nombre_campo_1
+  Nullable: NULLABLE
+  Precision: 2147483647
+  Scale: 0
+  SchemaName: ''
+  TableName: ''
+  Type: varchar
+
+- CaseSensitive: true
+  CatalogName: hive
+  Label: nombre_campo_2
+  Name: nombre_campo_2
+  Nullable: NULLABLE
+  Precision: 2147483647
+  Scale: 0
+  SchemaName: ''
+  TableName: ''
+  Type: varchar
+
+- CaseSensitive: true
+  CatalogName: hive
+  Label: nombre_campo_3
+  Name: nombre_campo_3
+  Nullable: NULLABLE
+  Precision: 2147483647
+  Scale: 0
+  SchemaName: ''
+  TableName: ''
+  Type: varchar
+
+- CaseSensitive: true
+  CatalogName: hive
+  Label: created_at
+  Name: created_at
+  Nullable: NULLABLE
+  Precision: 2147483647
+  Scale: 0
+  SchemaName: ''
+  TableName: ''
+  Type: timestamp
+
+- CaseSensitive: true
+  CatalogName: hive
+  Label: tstamp
+  Name: tstamp
+  Nullable: NULLABLE
+  Precision: 2147483647
+  Scale: 0
+  SchemaName: ''
+  TableName: ''
+  Type: bigint
+
+- CaseSensitive: true
+  CatalogName: hive
+  Label: key
+  Name: key
+  Nullable: NULLABLE
+  Precision: 2147483647
+  Scale: 0
+  SchemaName: ''
+  TableName: ''
+  Type: varchar
+
+- CaseSensitive: true
+  CatalogName: hive
+  Label: sortkey
+  Name: sortkey
+  Nullable: NULLABLE
+  Precision: 2147483647
+  Scale: 0
+  SchemaName: ''
+  TableName: ''
+  Type: varchar

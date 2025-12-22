@@ -1,0 +1,2 @@
+include addons/config/schemas/*.yml
+include col_pragma_logro_pgm_extraer_tabla_dynamodb/config/reports/*.yml
