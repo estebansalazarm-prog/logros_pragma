@@ -8,17 +8,17 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV "/Users/esteban.salazar/projects/pragma/logros/col_pragma_logro_pgm_extraer_tabla_dynamodb/virtual"
+setenv VIRTUAL_ENV /Users/oscar.vergara/workspaces/logros_pragma/col_pragma_logro_pgm_extraer_tabla_dynamodb/virtual
 
 set _OLD_VIRTUAL_PATH="$PATH"
-setenv PATH "$VIRTUAL_ENV/bin:$PATH"
+setenv PATH "$VIRTUAL_ENV/"bin":$PATH"
 
 
 set _OLD_VIRTUAL_PROMPT="$prompt"
 
 if (! "$?VIRTUAL_ENV_DISABLE_PROMPT") then
-    set prompt = "(virtual) $prompt"
-    setenv VIRTUAL_ENV_PROMPT "(virtual) "
+    set prompt = '(virtual) '"$prompt"
+    setenv VIRTUAL_ENV_PROMPT '(virtual) '
 endif
 
 alias pydoc python -m pydoc

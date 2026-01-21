@@ -1,4 +1,4 @@
-#!/Users/esteban.salazar/projects/pragma/logros/col_pragma_logro_pgm_extraer_tabla_dynamodb/virtual/bin/python3
+#!/Users/oscar.vergara/workspaces/logros_pragma/col_pragma_logro_pgm_extraer_tabla_dynamodb/virtual/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
