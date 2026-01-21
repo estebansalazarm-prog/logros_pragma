@@ -109,7 +109,7 @@ def aws_credentials_fixture():
 
 
 def test_ingesta_tarjeta_uses_newimage_for_full(spark):
-    df_input = spark.read.json("glue/tests/mocks/pgm/full/col_json_dynamodb_nombre_tabla")
+    df_input = spark.read.json("col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/mocks/pgm/full/col_json_dynamodb_nombre_tabla")
 
     # Mock del job_config con configuración ETL
     job_config_mock = MagicMock()

@@ -57,7 +57,7 @@ def mocker_test_fixture(mocker, spark):
     mocker.patch("pyspark.sql.readwriter.DataFrameWriter.saveAsTable")
 
     # Mock de lectura desde S3
-    sample_df = spark.read.json("glue/tests/mocks/productos_uncrawlable/srf/incremental/co_internal_expody/co_interno_expody_coretarjeta_co_physicalcard_binnacle")
+    sample_df = spark.read.json("col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/mocks/productos_uncrawlable/srf/incremental/co_internal_expody/co_interno_expody_coretarjeta_co_physicalcard_binnacle")
     mocker.patch("pyspark.sql.readwriter.DataFrameReader.json", return_value=sample_df)
     
     # Mock para get_report_config que retorna el YAML
