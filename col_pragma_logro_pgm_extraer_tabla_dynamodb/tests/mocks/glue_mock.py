@@ -32,7 +32,11 @@ class DataFrameReaderMock:
     ):
         schema = get_schema(table_name)
         current_path = os.getcwd()
+<<<<<<< HEAD
         csv_path = f"{current_path}/tests/mocks/data/{table_name}.csv"
+=======
+        csv_path = f"{current_path}/col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/mocks/data/{table_name}.csv"
+>>>>>>> 1962a25100f2e5c1a632d3528f04b68d356c1b22
         print(csv_path)
         if os.path.exists(csv_path):
             table = self.spark.read.csv(csv_path, header=True, sep=',', schema=schema)
@@ -48,7 +52,16 @@ class DataFrameReaderMock:
     def from_options(self, **options):
         paths = options["connection_options"]["paths"]
         new_paths = []
+<<<<<<< HEAD
         print("Original S3 paths:", paths)
+=======
+        print(paths)
+        # converts s3 uris to local dev path and removing the bucket
+        for path in paths:
+            path = "/".join(path.split("/")[3:7])
+            path = "col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/mocks/"+path+"/"
+            new_paths.append(path)
+>>>>>>> 1962a25100f2e5c1a632d3528f04b68d356c1b22
 
         # Base path de los mocks (relativo a este archivo)
         mock_base_path = Path(__file__).resolve().parent.parent / "mocks"

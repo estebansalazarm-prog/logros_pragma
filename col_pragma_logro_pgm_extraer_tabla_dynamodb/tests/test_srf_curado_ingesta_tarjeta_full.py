@@ -1,14 +1,16 @@
 """
-Test para verificar el flujo completo de ingesta FULL con configuración YAML
+STR DOC
 """
 import os
 import sys
 from contextlib import nullcontext as does_not_raise
 import importlib
 import pytest
+from unittest.mock import MagicMock
 from pyspark.sql import SparkSession
 from addons.config.spark_config import spark_config
 from tests.mocks.glue_mock import GlueContextMock
+from col_pragma_logro_pgm_extraer_tabla_dynamodb.etl.transform import raw_transformations
 
 @pytest.fixture(name="spark")
 def spark_fixture():
@@ -36,37 +38,17 @@ PROCESS_DATE = "2025-04-16"
 PROCESS_TYPE = "FULL"
 CONFIG_TABLE = "nombre_tabla"
 
-@pytest.fixture(scope="function", autouse=True)
-def setup_module_fixture():
-    """
-    Fixture que configura sys.argv y recarga el módulo ANTES de cada test.
-    Esto asegura que cada test tenga su propia configuración limpia.
-    """
-    # Configurar sys.argv con los valores correctos para este test (FULL)
-    sys.argv = [
-        JOB_SCRIPT_PATH,
-        "--JOB_NAME=logro",
-        f"--ACCOUNT={ACCOUNT}",
-        f"--ENV={ENV}",
-        f"--PROCESS_DATE={PROCESS_DATE}",
-        f"--PROCESS_TYPE={PROCESS_TYPE}",  # FULL
-        f"--CONFIG_TABLE={CONFIG_TABLE}",
-    ]
+sys.argv = [
+    JOB_SCRIPT_PATH,
+    "--JOB_NAME=logro",
+    f"--ACCOUNT={ACCOUNT}",
+    f"--ENV={ENV}",
+    f"--PROCESS_DATE={PROCESS_DATE}",
+    f"--PROCESS_TYPE={PROCESS_TYPE}",
+    f"--CONFIG_TABLE={CONFIG_TABLE}",
+]
 
-    # Forzar recarga del módulo para que lea los nuevos valores de sys.argv
-    # Esto es crítico porque el código a nivel de módulo lee sys.argv al importarse
-    if JOB_SCRIPT_PATH in sys.modules:
-        # Eliminar el módulo del cache para forzar recarga completa
-        del sys.modules[JOB_SCRIPT_PATH]
-    
-    # Importar/recargar el módulo - esto ejecutará el código a nivel de módulo
-    # que leerá sys.argv con los valores correctos
-    importlib.import_module(JOB_SCRIPT_PATH)
-    
-    yield
-    
-    # Cleanup después del test
-    pass
+JOB_SCRIPT_MODULE = importlib.import_module(JOB_SCRIPT_PATH)
 
 @pytest.fixture(autouse=True)
 def mocker_test_fixture(mocker, spark):
@@ -75,13 +57,7 @@ def mocker_test_fixture(mocker, spark):
     mocker.patch("pyspark.sql.readwriter.DataFrameWriter.saveAsTable")
 
     # Mock de lectura desde S3
-<<<<<<< HEAD:col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/test_main_full.py
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    mock_path = os.path.join(test_dir, "mocks", "pgm", "full", "col_json_dynamodb_nombre_tabla")
-    sample_df = spark.read.json(mock_path)
-=======
-    sample_df = spark.read.json("col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/mocks/productos_uncrawlable/srf/incremental/co_internal_expody/co_interno_expody_coretarjeta_co_physicalcard_binnacle")
->>>>>>> 1962a25100f2e5c1a632d3528f04b68d356c1b22:col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/test_srf_curado_ingesta_tarjeta_incremental.py
+    sample_df = spark.read.json("glue/tests/mocks/pgm/full/col_json_dynamodb_nombre_tabla")
     mocker.patch("pyspark.sql.readwriter.DataFrameReader.json", return_value=sample_df)
     
     # Mock para get_report_config que retorna el YAML
@@ -98,7 +74,7 @@ source_config:
     path_template_full: "s3://{raw_bucket}/pgm/col_json_dynamodb_nombre_tabla/full/year={process_year}/month={process_month}/day={process_day}/AWSDynamoDB/*/data"
     data_format: "json"
 processing_config:
-  schema_name: "col_pragma_tabla_final"
+  schema_name: "co_pragma_tabla_final"
   key_columns:
     - "key"
     - "sortkey"
@@ -111,19 +87,16 @@ output_config:
     
     mocker.patch("col_pragma_logro_pgm_extraer_tabla_dynamodb.config.report_config_path.get_report_config", return_value=(yaml_content, "mock_path"))
     
-    # Mock para get_schema - debe coincidir con el schema YAML real
-    # Nota: La columna 'id' se genera dinámicamente en las transformaciones,
-    # pero debe estar en el schema para que align_schema la mantenga
+    # Mock para get_schema
     from pyspark.sql.types import StructType, StructField, StringType, TimestampType, LongType
     mock_schema = StructType([
+        StructField("customer_id", StringType(), True),
+        StructField("transaction_id", StringType(), True),
+        StructField("tstamp", LongType(), True),
         StructField("created_at", TimestampType(), True),
-        StructField("id", StringType(), False),  # id se genera, no es nullable
-        StructField("key", StringType(), True),
-        StructField("nombre_campo_1", StringType(), True),
-        StructField("nombre_campo_2", StringType(), True),
-        StructField("nombre_campo_3", StringType(), True),
-        StructField("sortkey", StringType(), True),
-        StructField("tstamp", LongType(), True)
+        StructField("token", StringType(), True),
+        StructField("region", StringType(), True),
+        StructField("id", StringType(), True)
     ])
     mocker.patch("addons.pyspark_utils.schema_parser.get_schema", return_value=mock_schema)
 
@@ -135,14 +108,26 @@ def aws_credentials_fixture():
     os.environ["AWS_SESSION_TOKEN"] = "testing"
 
 
-def test_main(spark: SparkSession, setup_module_fixture):
-    """
-    Test del flujo completo de ingesta FULL.
-    Verifica que el proceso completo se ejecute sin errores usando configuración YAML.
-    """
-    # Importar el módulo después de que el fixture haya configurado sys.argv
-    job_script_module = importlib.import_module(JOB_SCRIPT_PATH)
+def test_ingesta_tarjeta_uses_newimage_for_full(spark):
+    df_input = spark.read.json("col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/mocks/pgm/full/col_json_dynamodb_nombre_tabla")
+
+    # Mock del job_config con configuración ETL
+    job_config_mock = MagicMock()
+    job_config_mock.is_incremental = False
     
-    with does_not_raise():
-        glue_context = GlueContextMock(spark=spark)
-        job_script_module.main(spark=spark, glue_context=glue_context)
+    # Mock de elt_config_table con processing_config
+    processing_config_mock = MagicMock()
+    processing_config_mock.key_columns = ["key", "sortkey"]
+    processing_config_mock.order_by_column = "tstamp"
+    processing_config_mock.schema_name = "col_pragma_tabla_final"
+    processing_config_mock.partition_date = "created_at"
+    
+    job_config_mock.elt_config_table = MagicMock()
+    job_config_mock.elt_config_table.processing_config = processing_config_mock
+
+    df_result = raw_transformations.get_table_transformations(df_input, job_config_mock)
+
+    # Verificar que el resultado no sea None
+    assert df_result is not None
+    # Verificar que tenga la columna esperada como producto de aplanar "Item"
+    assert "tsstamp" in df_result.columns
