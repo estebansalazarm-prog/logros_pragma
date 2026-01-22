@@ -52,7 +52,7 @@ def setup_module_fixture():
         f"--PROCESS_TYPE={PROCESS_TYPE}",  # INC
         f"--CONFIG_TABLE={CONFIG_TABLE}",
     ]
-    
+
     # Forzar recarga del módulo para que lea los nuevos valores de sys.argv
     # Esto es crítico porque el código a nivel de módulo lee sys.argv al importarse
     if JOB_SCRIPT_PATH in sys.modules:

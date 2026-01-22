@@ -75,7 +75,7 @@ def get_table_transformations(
             df_flattened.withColumn("row_number", F.row_number().over(window_spec))
             .filter(F.col("row_number") == 1)
             .drop("row_number")
-        )
+    )
     else:
         # Si no hay key_columns u order_by_column, usar el DataFrame sin ventana
         df_latest_status = df_flattened
