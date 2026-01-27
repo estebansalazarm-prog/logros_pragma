@@ -27,7 +27,7 @@ Job **dinámico y configurable** que ingesta tablas de DynamoDB exportadas a S3 
 ### Control de Versiones
 | Versión | Descripción | Autor | Fecha |
 |---------|-------------|-------|-------|
-| 1.0 | Creación del job dinámico | Esteban Salazar | 2025-01-30 |
+| 1.0 | Creación del job dinámico | Esteban Salazar y Oscar Vergara| 2025-01-30 |
 
 ## 🏗️ Arquitectura del Job
 
