@@ -14,7 +14,7 @@ from tests.mocks.glue_mock import GlueContextMock
 def spark_fixture():
     return (
         SparkSession.builder
-        .appName("test_tarjeta_customer")
+        .appName("test_dynamodb_table")
         .enableHiveSupport()
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID", "testing"))
@@ -79,6 +79,48 @@ def mocker_test_fixture(mocker, spark):
     mock_path = os.path.join(test_dir, "mocks", "pgm", "incremental", "col_json_dynamodb_nombre_tabla")
     sample_df = spark.read.json(mock_path)
     mocker.patch("pyspark.sql.readwriter.DataFrameReader.json", return_value=sample_df)
+    
+    # Mock para get_report_config que retorna el YAML
+    yaml_content = """process_metadata:
+  process_id: 'extract_dynamodb_table'
+  description: 'Extrae datos de nombre_tabla, aplana los datos y los cataloga en athena.'
+  owner: 'pragma'
+  version: '1.0.0'
+source_config:
+  source_name: 'S3 DynamoDB Export - Pragma'
+  connection_type: 's3_path'
+  s3_details:
+    path_template_inc: "s3://{raw_bucket}/pgm/col_json_dynamodb_nombre_tabla/incremental/year={process_year}/month={process_month}/day={process_day}/hour=*/AWSDynamoDB/data"
+    path_template_full: "s3://{raw_bucket}/pgm/col_json_dynamodb_nombre_tabla/full/year={process_year}/month={process_month}/day={process_day}/AWSDynamoDB/*/data"
+    data_format: "json"
+processing_config:
+  schema_name: "col_pragma_tabla_final"
+  key_columns:
+    - "key"
+    - "sortkey"
+  order_by_column: "tstamp"
+  partition_date: "created_at"
+  precombine_key: "tstamp"
+output_config:
+  data_product: "tabla_final"
+  product_type: "pragma"
+"""
+    
+    mocker.patch("col_pragma_logro_pgm_extraer_tabla_dynamodb.config.report_config_path.get_report_config", return_value=(yaml_content, "mock_path"))
+    
+    # Mock para get_schema - debe coincidir con el schema YAML real
+    from pyspark.sql.types import StructType, StructField, StringType, TimestampType, LongType
+    mock_schema = StructType([
+        StructField("created_at", TimestampType(), True),
+        StructField("id", StringType(), False),  # id se genera, no es nullable
+        StructField("key", StringType(), True),
+        StructField("nombre_campo_1", StringType(), True),
+        StructField("nombre_campo_2", StringType(), True),
+        StructField("nombre_campo_3", StringType(), True),
+        StructField("sortkey", StringType(), True),
+        StructField("tstamp", LongType(), True)
+    ])
+    mocker.patch("addons.pyspark_utils.schema_parser.get_schema", return_value=mock_schema)
 
 @pytest.fixture(autouse=True)
 def aws_credentials_fixture():

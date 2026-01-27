@@ -14,7 +14,7 @@ from tests.mocks.glue_mock import GlueContextMock
 def spark_fixture():
     return (
         SparkSession.builder
-        .appName("test_tarjeta_customer")
+        .appName("test_dynamodb_table")
         .enableHiveSupport()
         .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
         .config("spark.hadoop.fs.s3a.access.key", os.getenv("AWS_ACCESS_KEY_ID", "testing"))
@@ -75,13 +75,9 @@ def mocker_test_fixture(mocker, spark):
     mocker.patch("pyspark.sql.readwriter.DataFrameWriter.saveAsTable")
 
     # Mock de lectura desde S3
-<<<<<<< HEAD:col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/test_main_full.py
     test_dir = os.path.dirname(os.path.abspath(__file__))
     mock_path = os.path.join(test_dir, "mocks", "pgm", "full", "col_json_dynamodb_nombre_tabla")
     sample_df = spark.read.json(mock_path)
-=======
-    sample_df = spark.read.json("col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/mocks/productos_uncrawlable/srf/incremental/co_internal_expody/co_interno_expody_coretarjeta_co_physicalcard_binnacle")
->>>>>>> 1962a25100f2e5c1a632d3528f04b68d356c1b22:col_pragma_logro_pgm_extraer_tabla_dynamodb/tests/test_srf_curado_ingesta_tarjeta_incremental.py
     mocker.patch("pyspark.sql.readwriter.DataFrameReader.json", return_value=sample_df)
     
     # Mock para get_report_config que retorna el YAML
