@@ -26,7 +26,39 @@ glue/env
 glue/venv
 glue/venv*
 /pyvenv.cfg
+# Virtual environments
+virtual/
+.venv/
+venv/
+env/
+ENV/
+.glue_env/
+glue/env/
+glue/venv/
+glue/venv*
+/pyvenv.cfg
+htmlcov/
+
+# Python testing and tox
+.pytest_cache/
 .tox/
+
+# Files that make noise, temp data, etc.
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+*.sqlite3
+*.egg-info/
+.cache/
+coverage.*
+.idea/
+.DS_Store
+Thumbs.db
+# End of Selection
+```
 
 # dependencies
 node_modules

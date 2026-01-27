@@ -35,8 +35,13 @@ class Catalog:
                     s3_uri = s3_uri.replace("s3://", f"{current_path}/dev/catalog/")
 
                 table_df = self.glue_context.spark_session.read.json([s3_uri])
- 
 
+            elif isinstance(source_meta, Table):
+                dynamic_frame = self.get_dataframe_from_catalog(
+                    database=source_meta.database,
+                    table_name=source_meta.table_name
+                )
+                table_df: DataFrame = dynamic_frame.toDF()
             else:
                 raise CatalogException("No se tiene otro tipo registrado de carga")
         except Exception as e:
